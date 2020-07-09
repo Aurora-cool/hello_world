@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 apps_path = os.path.join(BASE_DIR, 'apps')
 # 将绝对路径添加到'导包路径'中
 sys.path.insert(0, apps_path)
-print(sys.path)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
