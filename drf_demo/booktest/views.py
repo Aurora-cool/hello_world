@@ -1,9 +1,8 @@
 import json
-
-from django.shortcuts import render
 from django.views import View
 from .models import BookInfo
 from django.http import JsonResponse, HttpResponse
+from .serializers import BookInfoSerializer
 
 
 # Create your views here.
@@ -20,16 +19,9 @@ class BookListView(View):
         # 1.查询数据库获取所有图书数据
         books = BookInfo.objects.all()
         # 2.将所以图书数据通过json进行返回
-        book_list = []
-        for book in books:
-            book_list.append({
-                'id': book.id,
-                'btitle': book.btitle,
-                'bpub_date': book.bpub_date,
-                'bread': book.bread,
-                'bcomment': book.bcomment
-            })
-        return JsonResponse(book_list, safe=False)
+        serializer = BookInfoSerializer(books, many=True)
+
+        return JsonResponse(serializer.data, safe=False)
 
     def post(self, request):
         """
@@ -37,24 +29,13 @@ class BookListView(View):
         """
         # 1.获取参数并校验
         json_dict = json.loads(request.body)
-        btitle = json_dict.get('btitle')
-        bpub_date = json_dict.get('bpub_date')
-
-        # TODO: 省略参数校验过程
+        # 反序列化-参数校验
+        serializer = BookInfoSerializer(data=json_dict)
+        serializer.is_valid(raise_exception=True)
         # 2.创建图书数据并保存到数据库
-        book = BookInfo.objects.create(btitle=btitle,
-                                       bpub_date=bpub_date)
+        serializer.save()
 
-        # 3.将新增图书数据通过json进行返回
-        book_dict = {
-            'id': book.id,
-            'btitle': book.btitle,
-            'bpub_date': book.bpub_date,
-            'bread': book.bread,
-            'bcomment': book.bcomment
-        }
-
-        return JsonResponse(book_dict, status=201)
+        return JsonResponse(serializer.data, status=201)
 
 
 class BookDetailView(View):
@@ -67,15 +48,9 @@ class BookDetailView(View):
             return JsonResponse({'detail': 'not found'}, status=404)
 
         # 2.将指定图书数据通过json进行返回
-        book_dict = {
-            'id': book.id,
-            'btitle': book.btitle,
-            'bpub_date': book.bpub_date,
-            'bread': book.bread,
-            'bcomment': book.bcomment
-        }
+        serializer = BookInfoSerializer(book)
 
-        return JsonResponse(book_dict)
+        return JsonResponse(serializer.data)
 
     def put(self, request, pk):
         """修改指定图书数据"""
@@ -88,25 +63,17 @@ class BookDetailView(View):
 
         # 2.获取参数并进行校验
         json_dict = json.loads(request.body)
-        btitle = json_dict.get('btitle')
-        bpub_date = json_dict.get('bpub_date')
-        # TODO: 省略参数校验过程
+
+        # 反序列化-参数校验
+        serializer = BookInfoSerializer(book, data=json_dict)
+        serializer.is_valid(raise_exception=True)
 
         # 3.修改图书数据并保存到数据库
-        book.btitle = btitle
-        book.bpub_date = bpub_date
-        book.save()
+        # 反序列化保存
+        serializer.save()  # save()内部调用了序列化器类中的update方法
 
         # 4.将修改图书数据通过json进行返回
-        book_dict = {
-            'id': book.id,
-            'btitle': book.btitle,
-            'bpub_date': book.bpub_date,
-            'bread': book.bread,
-            'bcomment': book.bcomment
-        }
-
-        return JsonResponse(book_dict)
+        return JsonResponse(serializer.data)
 
     def delete(self, request, pk):
         """删除指定图书数据"""
