@@ -1,6 +1,6 @@
 import json
 from django.views import View
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
@@ -12,18 +12,23 @@ from .serializers import BookInfoSerializer
 # Create your views here.
 
 
-class BookListView(APIView):
+class BookListView(GenericAPIView):
     """/books/"""
+    # 指定视图所使用的序列化器类
+    serializer_class = BookInfoSerializer
+    # 指定视图所使用的查询机
+    queryset = BookInfo.objects.all()
+
     def get(self, request):
         """
         获取所以图书数据
         1.查询数据库获取所有图书数据
         2.将所以图书数据通过json进行返回
         """
-        # 1.查询数据库获取所有图书数据
-        queryset = BookInfo.objects.all()
         # 2.将所以图书数据通过json进行返回
-        serializer = BookInfoSerializer(queryset, many=True)
+        queryset =  self.get_queryset()
+
+        serializer = self.get_serializer(queryset, many=True)
 
         return Response(serializer.data)
 
@@ -32,7 +37,7 @@ class BookListView(APIView):
         新增一本图书数据
         """
         # 反序列化-参数校验
-        serializer = BookInfoSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # 2.创建图书数据并保存到数据库
         serializer.save()
@@ -40,31 +45,30 @@ class BookListView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class BookDetailView(APIView):
+class BookDetailView(GenericAPIView):
+
+    # 指定视图所使用的序列化器类
+    serializer_class = BookInfoSerializer
+    # 指定视图所使用的查询机
+    queryset = BookInfo.objects.all()
+
     def get(self, request, pk):
         """获取指定图书数据"""
         # 1.查询数据库获取的指定的图书数据
-        try:
-            book = BookInfo.objects.get(pk=pk)
-        except BookInfo.DoesNotExist:
-            return Http404
+        instance = self.get_object()
 
         # 2.将指定图书数据通过json进行返回
-        serializer = BookInfoSerializer(book)
+        serializer = self.get_serializer(instance)
 
         return Response(serializer.data)
 
     def put(self, request, pk):
         """修改指定图书数据"""
         # 1.查询数据库获取指定的图书数据
-        try:
-            book = BookInfo.objects.get(pk=pk)
-        except BookInfo.DoesNotExist:
-            # 图书不存在
-            raise Http404
+        instance = self.get_object()
 
         # 反序列化-参数校验
-        serializer = BookInfoSerializer(book, data=request.data)
+        serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # 3.修改图书数据并保存到数据库
@@ -77,12 +81,8 @@ class BookDetailView(APIView):
     def delete(self, request, pk):
         """删除指定图书数据"""
         # 1.查询数据库获取指定的图书数据
-        try:
-            book = BookInfo.objects.get(pk=pk)
-        except BookInfo.DoesNotExist:
-            # 图书不存在
-            raise Http404
+        instance = self.get_object()
         # 2. 删除指定图书数据
-        book.delete()
+        instance.delete()
         # 3. 返回响应
-        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
