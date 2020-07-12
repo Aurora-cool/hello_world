@@ -11,8 +11,9 @@ import django
 django.setup()
 
 import json
-from booktest.models import BookInfo
-from booktest.serializers import BookInfoSerializer
+from booktest.models import BookInfo, HeroInfo
+from booktest.serializers import BookInfoSerializer, HeroInfoSerializer
+
 
 # class Goods(object):
 #
@@ -30,10 +31,14 @@ from booktest.serializers import BookInfoSerializer
 
 if __name__ == '__main__':
 
-    book = BookInfo.objects.get(id=1)
-    serializer = BookInfoSerializer(book)
-    res = serializer.data
-    print(res)
+    # book = BookInfo.objects.get(id=1)
+    # serializer = BookInfoSerializer(book)
+    # res = serializer.data
+    # print(res)
+    #
+    hero = HeroInfo.objects.get(id=18)
+    serializer = HeroInfoSerializer(hero)
+    print(serializer.data)
     # # 准备多个对象数据
     # objects = [Goods('华为P40', 4900, 1000), Goods('小米10', 4300, 800)]
     # # 创建序列化器对象

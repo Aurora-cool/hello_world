@@ -13,8 +13,8 @@ from .models import BookInfo, HeroInfo
 #     bpub_date = serializers.DateField(label='发布日期')
 #     bread = serializers.IntegerField(label='阅读量', required=False)
 #     bcomment = serializers.IntegerField(label='评论量', required=False)
-#
-#
+#     heroinfo_set = serializers.StringRelatedField(label='英雄名',read_only=True, many=True)
+
 # class HeroInfoSerializer(serializers.Serializer):
 #     """英雄序列化器类"""
 #     GENDER_CHOICES = (
@@ -27,7 +27,6 @@ from .models import BookInfo, HeroInfo
 #     hcomment = serializers.CharField(label='描述信息', max_length=200, required=False)
 
 
-
 class BookInfoSerializer(serializers.ModelSerializer):
     """图书序列化器类"""
     class Meta:
@@ -35,3 +34,8 @@ class BookInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HeroInfoSerializer(serializers.ModelSerializer):
+    """英雄序序列化器类"""
+    class Meta:
+        model = HeroInfo
+        fields = '__all__'
