@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'booktest',
     'rest_framework',
+    'django_filters',  # 过滤设置
 ]
 
 MIDDLEWARE = [
